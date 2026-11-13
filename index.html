@@ -2,9 +2,9 @@
 <html lang="ja">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="125×70mmの画像を窓枠に合わせてトリミング。134×82mmの実寸PDFも作成できます。画像は端末内で処理します。">
+  <meta name="description" content="画像を125×70mmにトリミングし、コンビニ写真プリント用の2L判JPEGを作成。裁断目印・画質の目安・印刷倍率の補正に対応。画像は端末内で処理します。">
   <title>まどぴた — 窓枠に合わせる画像トリミング</title>
-  <link rel="stylesheet" href="style.css"><script defer src="app.js"></script>
+  <link rel="stylesheet" href="style.css?v=2"><script defer src="app.js?v=2"></script>
 </head>
 <body>
 <header><a class="brand" href="./" aria-label="まどぴた ホーム"><span class="brand-mark"></span>まどぴた<span class="brand-sub">WINDOW CROP</span></a><span class="privacy"><span></span>画像はこの端末内で処理</span></header>
@@ -12,7 +12,7 @@
   <div class="intro"><div><p class="eyebrow">ぴったりの一枚を、窓の中に。</p><h1>枠に合わせて、切り取る。</h1><p class="lead">画像を動かして、拡大して。見せたいところを、ちょうどよく。</p></div><div class="size-stamp"><strong>125 <span>×</span> 70</strong><span>画像サイズ / mm</span></div></div>
   <div class="workspace">
     <section class="editor" aria-label="トリミング編集">
-      <div class="editor-toolbar"><span class="section-label">プレビュー</span><div class="segmented" aria-label="表示モード"><button id="editMode" class="active" aria-pressed="true">切り抜き</button><button id="paperMode" aria-pressed="false">用紙全体</button></div></div>
+      <div class="editor-toolbar"><span class="section-label">プレビュー</span><div class="segmented" aria-label="表示モード"><button id="editMode" class="active" aria-pressed="true">切り抜き</button><button id="paperMode" aria-pressed="false">用紙</button><button id="photoMode" aria-pressed="false">2L写真</button></div></div>
       <div id="dropZone" class="stage"><div class="ruler top-ruler" id="widthLabel">125 mm</div><div class="ruler side-ruler" id="heightLabel">70 mm</div><div class="canvas-wrap"><canvas id="preview" tabindex="0" role="img" aria-label="画像のトリミングプレビュー。ドラッグまたは矢印キーで移動できます。"></canvas><div id="empty"><span class="empty-icon">＋</span><h2>ここに画像をドロップ</h2><p>または、下のボタンから選択</p><button class="primary" id="openImage">画像を選ぶ <span>↗</span></button><small>JPEG / PNG / WebP など</small><button class="text-button" id="sample">サンプルで試す →</button></div></div></div>
       <div class="editor-footer"><span id="interactionHint">画像を読み込むと編集できます</span><span id="dimensions">—</span></div>
       <input type="file" id="fileInput" accept="image/*" hidden>
@@ -20,10 +20,18 @@
     <aside>
       <section class="panel"><div class="panel-title"><span class="step">01</span><h2>画像を調整</h2><button id="replace" class="text-button" disabled>変更</button></div><p id="filename" class="filename">画像が選択されていません</p><fieldset id="adjustments" disabled><div class="control-label"><label for="zoom">拡大率</label><output id="zoomValue">100%</output></div><input id="zoom" type="range" min="1" max="5" step="0.01" value="1"><div class="range-labels"><span>枠いっぱい</span><span>500%</span></div><div class="button-row"><button id="rotate">↻ 90°回転</button><button id="reset">位置をリセット</button></div></fieldset></section>
       <section class="panel"><div class="panel-title"><span class="step">02</span><h2>見える範囲を確認</h2></div><label class="toggle-row"><span><i class="legend window-legend"></i>透明窓 <small>124 × 69 mm</small></span><input id="showWindow" type="checkbox" checked></label><label class="toggle-row"><span><i class="legend safe-legend"></i>大事な絵柄の目安 <small>120 × 65 mm</small></span><input id="showSafe" type="checkbox" checked></label><p class="note">顔や文字は破線の内側へ。窓の外側は、周囲0.5mmずつ隠れます。ガイドは保存画像には入りません。</p></section>
-      <section class="panel export-panel"><div class="panel-title"><span class="step">03</span><h2>保存する</h2></div><div class="control-label"><label for="dpi">出力解像度</label><select id="dpi"><option value="300">300 dpi · 標準</option><option value="600">600 dpi · 高精細</option></select></div><button id="savePng" class="primary" disabled>切り抜き画像を保存 <span>↓</span></button><p class="export-caption">PNG · 125 × 70 mm</p><button id="savePdf" class="secondary" disabled>用紙サイズのPDFを保存 <span>↓</span></button><p class="export-caption">134 × 82 mm · 左5 mm / 上10 mmに配置</p><p id="resolutionNote" class="note">実寸で印刷する場合はPDFをお使いください。</p></section>
+      <section class="panel export-panel"><div class="panel-title"><span class="step">03</span><h2>写真プリント用に保存</h2></div>
+        <div class="control-label"><label for="dpi">出力解像度</label><select id="dpi"><option value="600" selected>600 dpi · 画質優先</option><option value="300">300 dpi · 軽量</option></select></div>
+        <div class="quality-info"><strong id="qualityLabel">画像を選ぶと画質の目安が出ます</strong><p id="resolutionNote" class="note">元画像の画素数から、切り抜いた部分の実効解像度を計算します。</p></div>
+        <button id="savePhoto" class="primary" disabled>2L写真プリント用JPEGを保存 <span>↓</span></button><p class="export-caption">178 × 127 mm · 裁断目印付き · 1枚分</p>
+        <p id="photoStatus" class="note" aria-live="polite">134 × 82mmに切って使えます。L判には収まりません。</p>
+        <details class="calibration"><summary>試し刷り後のサイズ補正</summary><p class="note">補正なしで一度印刷し、下の「100mm確認線」の端から端を定規で測って入力してください。同じ印刷設定で再保存・再印刷すると、その倍率のずれを補正します。</p><div class="control-label"><label for="measuredLength">補正前の確認線の実測</label><span><input id="measuredLength" type="number" min="90" max="110" step="0.1" value="100" inputmode="decimal"> mm</span></div><p id="correctionNote" class="note">補正なし（100%）</p><button id="resetCorrection" class="text-button">補正を解除</button></details>
+        <details class="other-exports"><summary>切り抜き画像・実寸PDFを保存</summary><button id="savePng" class="secondary" disabled>切り抜きPNGを保存 <span>↓</span></button><p class="export-caption">125 × 70 mm · 写真プリントには上のJPEGを使用</p><button id="savePdf" class="secondary" disabled>用紙サイズのPDFを保存 <span>↓</span></button><p class="export-caption">134 × 82 mm · 実寸指定のできるプリンター向け</p></details>
+      </section>
     </aside>
   </div>
   <section class="specs" aria-label="サイズの仕様"><div><span class="spec-label">用紙</span><strong>134 × 82 <small>mm</small></strong></div><span class="spec-divider"></span><div><span class="spec-label">配置する画像</span><strong>125 × 70 <small>mm</small></strong></div><span class="spec-divider"></span><div><span class="spec-label">透明窓</span><strong>124 × 69 <small>mm</small></strong></div><span class="spec-divider"></span><div><span class="spec-label">絵柄の推奨範囲</span><strong>120 × 65 <small>mm</small></strong></div></section>
-  <footer><span>まどぴた / WINDOW CROP</span><p>PDFの印刷設定は「実際のサイズ」または「100%」。用紙への自動拡大・縮小はオフにしてください。</p></footer>
+  <section class="print-guide" aria-labelledby="printGuideTitle"><div><p class="eyebrow">コンビニの写真用紙で使う</p><h2 id="printGuideTitle">2Lでプリントして、目印で切る。</h2><p>写真全体は178 × 127mm。中央に134 × 82mmの用紙を配置しています。</p></div><ol><li><strong>JPEGを保存する</strong><span>「2L写真プリント用JPEG」を保存。スマホでは「ファイル」や「ダウンロード」に入ります。必要なら画像を開き、写真アプリにも保存してください。</span></li><li><strong>写真プリントの「2L判」を選ぶ</strong><span>保存したJPEGを登録し、通常の写真プリントを選択。アプリ側で追加のズーム・トリミング・フレーム加工をしないでください。白い部分もデータの一部です。</span></li><li><strong>寸法を確認して切る</strong><span>最初は1枚だけ試し刷り。100mm確認線を測り、ずれたら上の補正機能で調整します。四隅の目印を結ぶ位置で134 × 82mmに裁断してください。</span></li></ol><p class="print-caution">写真プリントは周囲のカットや拡大・縮小が入る場合があり、初回から厳密な実寸は保証できません。補正後も縦横の寸法を確認してください。元画像が低解像度の場合、600dpi保存だけでは細部は増えません。</p><div class="service-links"><a href="https://www.printing.ne.jp/support/landing/landing_smartphone_picture.html" target="_blank" rel="noopener noreferrer">セブン‐イレブンの写真プリント案内 ↗</a><a href="https://networkprint.ne.jp/" target="_blank" rel="noopener noreferrer">ファミリーマート・ローソン等のネットワークプリント ↗</a></div></section>
+  <footer><span>まどぴた / WINDOW CROP</span><p>写真用紙には2L判JPEGを。PNG・PDFは、用途に合わせてお使いください。</p></footer>
 </main><div id="toast" role="status" aria-live="polite"></div>
 </body></html>
